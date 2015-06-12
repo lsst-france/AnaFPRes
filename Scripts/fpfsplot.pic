@@ -1,0 +1,23 @@
+## Example of piapp script to analyse the fpfscan output fits file 
+DIR = './'
+NAME = 'fpfsumm'
+if ( $# > 0 )  then
+  set DIR  $1
+endif
+if ( $# > 1 )  then
+  set NAME  $2
+endif
+set FILENAME ${DIR}${NAME}.fits 
+echo '---- reading fpfscan output fits file' $FILENAME
+readfits $FILENAME 
+print $NAME 1
+setaxesatt 'font=helvetica,bold,16 minorticks fixedfontsize'
+newwin 1 2  500 800
+plot2d $NAME (ra_mnx[0]+ra_mnx[1])/2 (dec_mnx[0]+dec_mnx[1])/2 nsrc>1 'marker=circle,5 notit'
+settitle 'RA (vert) - DEC (horiz) dist. in degrees' ' ' 'font=helvetica,bold,16'
+newh1d hr 0. 1. 100 
+projh1d hr $NAME (double)nfluxok/(double)nsrc 1 nsrc>1 
+disp hr 'notit'
+settitle 'Rapport NFluxOK/NSrc' ' ' 'font=helvetica,bold,16'
+
+ 

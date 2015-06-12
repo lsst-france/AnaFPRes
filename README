@@ -1,0 +1,98 @@
+==================  AnaFPRes - September 2013 ====================
+
+Functions, classes, and programs to analyse output files from LSST stack.
+
+Developed for tests of LSST stack at CC-IN2P3    
+R. Ansari ,  Univ. Paris Sud , LAL IN2P3/CNRS  
+   - Version V 1.0 : September 2013 
+
+Files in this module:
+Makefile	README		adselectft.cc	analsstdc.h	fpfscanb.cc	fpfscanmes.cc	
+mergeft.cc	analsstdc.cc	fpfscan.cc	fpfscanb.h	fpfscanmes.h	Scripts
+
+ - fpfscanb.h fpfscanb.cc fpfscanmes.h fpfscanmes.cc analsstdc.h analsstdc.cc :  
+   functions and classes to analyse DC output files, forced-photometry output files in this version
+ - fpfscan.cc : main program to sacn and analyse forced-photometry output files
+ - mergeft.cc : read and merge together several FITS files containing a bin table in HDU 2,
+   with the same structure
+ - adselectft.cc : uses the summary fits table produced by fpfscan to create a list of 
+   [run field camcol] for a given ra,dec region 
+ - Makefile : to build the software, (in Objs/ directory)
+ - Scripts/ directory containing some scripts, such as 
+  fpfsplot.pic which is an  (s)piapp example script to analyze the output FITS summary table
+
+Note: the programs uses the SOPHYA library. 
+AT CC-IN2P3, do :
+csh> source /sps/lsst/Library/Sophya/env.csh sl6
+bash> source /sps/lsst/Library/Sophya/env.sh sl6   
+
+
+====================
+Example:
+====================
+
+# Initialize SOPHYA environnement (SOPHYABASE LD_LIBRAR_PATH PATH)
+csh> source /sps/lsst/Library/Sophya/env.csh sl6
+# define the base directory where the fits photometry output files are sitting: 
+csh> set BD = /sps/lsst/data/dev/lsstprod/DC_2013/forcedPhot_dir/forcedPhot/
+
+# the list of runs and minimum,maximum field numbers 
+# File micro_runf_list.txt :  run_number  min_field_number run_number  max_field_number 
+566 261 598
+5637 181 518
+5807 361 698
+5808 11 50
+5866 11 258
+5871 11 170
+5872 11 211
+
+
+#  Launch the analysis program 
+csh> Ana_DC_LSST/Objs/fpfscan SUMMFT -basedir $BD -outp ./ -camcols 1,2 -filters i -runlistfile micro_runf_list.txt  -fields 1,999 -prtlev 1
+
+ PIOPersist::Initialize() Starting Sophya Persistence management service 
+SOPHYA Version  2.3 Revision 0 (V_Jun2013) -- Jun 22 2013 16:30:05 gcc 4.4.7 20120313 (Red Hat 4.4.7-3)
+ ------------ Program fpfscan.cc   ------------ 
+read_listfile(micro_runf_list.txt) 7 lines read from file
+ fpfscan/info: Activating Summary info table fill -> reading forced-photometry output files ...
+0- done run=5566 files: Total= 676 Missing= 1 Bad= 3 NOK=672
+1- done run=5637 files: Total= 1352 Missing= 339 Bad= 4 NOK=1009
+2- done run=5807 files: Total= 2028 Missing= 341 Bad= 5 NOK=1682
+3- done run=5808 files: Total= 2108 Missing= 342 Bad= 6 NOK=1760
+4- done run=5866 files: Total= 2604 Missing= 343 Bad= 7 NOK=2254
+5- done run=5871 files: Total= 2924 Missing= 345 Bad= 8 NOK=2571
+6- done run=5872 files: Total= 3326 Missing= 347 Bad= 9 NOK=2970
+ ----- End of ForcedPhotFileScan::ScanFiles()  Number of files:
+ Total= 3326 Missing= 347 Bad= 9 NOK=2970
+ Total Size= 6.25681e+06 kbytes (6.25681 GB)
+ForcedPhotFileScan::SaveOutputs() : saving run  fieldmin fieldmax values to 
+ ->./runfield_list.txt
+ForcedPhotFileScan::SaveOutputs(): saving forcedphotometry files summary information to 
+ ->!./fpfsumm.fits
+BaseDataTable: NVar= 11 NEnt= 2979 ( SegSize= 256  NbSegments= 12 )
+------------------------------------------------------------------------------
+  i:           Name (Typ)  [Sz] |         Min  |         Max  |        Units
+------------------------------------------------------------------------------
+  0:            run (  I)       |         5566 |         5872 |             
+  1:          field (  I)       |           11 |          698 |             
+  2:  camcol_filter (  I)       |           14 |           24 |             
+  3:           nsrc (  I)       |            0 |        10544 |             
+  4:         ra_mnx (  D)  [ 2] |            0 |      55.1252 |             
+  5:        dec_mnx (  D)  [ 2] |      -1.3448 |            0 |             
+  6:         id_mnx (  L)  [ 2] |           -1 |  3.94085e+17 |             
+  7:        oid_mnx (  L)  [ 2] |           -1 |   3.3953e+15 |             
+  8:       flux_mnx (  D)  [ 2] |     -12786.2 |  6.55026e+06 |             
+  9:        nfluxok (  I)       |            0 |         7749 |             
+ 10:       fluxmean (  D)       |            0 |      7608.57 |             
+------------------------------------------------------------------------------
+***Timing fpfscan.cc
+CPU     Time: Total= 203.74 (Partial= 203.74) s
+Elapsed Time: Total=00:06:59 (Partial= 00:06:59)
+ ----------------------- END of fpfscan.cc ------------------------ 
+
+
+
+====================
+ Analysis of the output fits file 
+====================
+csh> spiapp -term -exec Ana_DC_LSST/fpfsplot.pic  ./  fpfsumm  
